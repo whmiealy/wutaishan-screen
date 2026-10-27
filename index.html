@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>清凉妙境 · 大屏</title>
+<link rel="stylesheet" href="css/viewer.css?v=20261027">
+<style>
+/* 大屏循环片：真实地形三维为底，按时间轴叠加大字幕；同一时间轴也用于逐帧导出视频 */
+:root { --gold: #d9b45a; --ink: #f2efe6; --zhu: #cf5a40; --f: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; --fs: "Noto Serif SC", "Songti SC", "STSong", serif; color-scheme: dark; }
+html, body { margin: 0; height: 100%; background: #0b1220; overflow: hidden; font-family: var(--f); color: var(--ink); }
+.view { position: fixed; inset: 0; }
+.view .wt-labels { font-size: clamp(12px, 1.05vw, 22px); }
+.shade { position: fixed; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(8,13,22,.86) 0%, rgba(8,13,22,.62) 34%, rgba(8,13,22,.12) 56%, rgba(8,13,22,0) 66%); }
+.ov { position: fixed; left: 5vw; top: 50%; transform: translateY(-50%); width: 42vw; opacity: 0; pointer-events: none; }
+.eyebrow { font-size: 1.3vw; letter-spacing: .3em; color: var(--gold); font-weight: 700; }
+.title { font-family: var(--fs); font-weight: 900; font-size: 7vw; line-height: 1.05; margin-top: 1vw; text-shadow: 0 .3vw 1.2vw rgba(0,0,0,.5); }
+.sub { font-size: 1.9vw; margin-top: 1.4vw; line-height: 1.6; text-shadow: 0 .2vw .8vw rgba(0,0,0,.6); }
+.glyph { font-family: var(--fs); font-weight: 900; font-size: 13vw; line-height: 1; color: var(--gold); text-shadow: 0 .4vw 1.6vw rgba(0,0,0,.5); }
+.seals { display: flex; gap: 1.2vw; margin-top: 2vw; }
+.seal { width: 5.6vw; height: 5.6vw; border: .3vw solid var(--zhu); border-radius: .3vw; display: grid; place-items: center; color: var(--zhu); font-family: var(--fs); font-weight: 900; font-size: 3vw; background: rgba(255,250,240,.9); }
+.zones { columns: 2; column-gap: 2vw; margin-top: 1.6vw; font-size: 1.45vw; line-height: 2; }
+.zones b { color: var(--gold); margin-right: .5vw; font-variant-numeric: tabular-nums; }
+.hl { display: grid; gap: .6vw; margin-top: 1.6vw; font-size: 1.7vw; }
+.hl .lv { color: var(--gold); font-weight: 700; font-size: 1.3vw; letter-spacing: .2em; margin-top: 1vw; }
+.qrs { display: flex; gap: 3vw; margin-top: 2vw; }
+.qrs figure { margin: 0; text-align: center; }
+.qrs img { width: 11vw; height: 11vw; background: #fff; padding: .6vw; border-radius: .6vw; }
+.qrs figcaption { font-size: 1.5vw; margin-top: .8vw; }
+.bar { position: fixed; left: 5vw; right: 5vw; bottom: 3vh; display: flex; gap: .6vw; }
+.bar i { flex: 1; height: .35vw; border-radius: 1vw; background: rgba(255,255,255,.2); overflow: hidden; }
+.bar i b { display: block; height: 100%; width: 0; background: var(--gold); }
+.mark { position: fixed; right: 3vw; top: 3vh; font-family: var(--fs); font-size: 1.4vw; color: rgba(242,239,230,.8); }
+</style>
+</head>
+<body>
+<div class="view" id="vRegion"></div>
+<div class="view" id="vTown" style="visibility:hidden"></div>
+<div class="shade"></div>
+<div class="mark">清凉妙境 · 五台山非遗馆</div>
+
+<div class="ov" id="o1"><div class="eyebrow">五台山非物质文化遗产馆</div><div class="title">清凉妙境</div><div class="sub">一馆五台 · 到五台山，听见非遗</div></div>
+<div class="ov" id="o2"><div class="glyph" id="pkG">晨</div><div class="title" style="font-size:4.4vw" id="pkN">东台分馆</div><div class="sub" id="pkT">听海 · 晨课声场</div></div>
+<div class="ov" id="o3"><div class="eyebrow">一径</div><div class="title" style="font-size:5.6vw">朝台径</div><div class="sub">心馆 → 东台 → 北台 → 中台 → 西台 → 南台<br>全程约71公里，五台各盖一枚印</div><div class="seals"><div class="seal">晨</div><div class="seal">雪</div><div class="seal">石</div><div class="seal">月</div><div class="seal">花</div></div></div>
+<div class="ov" id="o4"><div class="eyebrow">一心</div><div class="title" style="font-size:4.6vw">四合院主馆<br>「清凉之心」</div><div class="zones" id="zones"></div></div>
+<div class="ov" id="o5"><div class="eyebrow">千灯夜</div><div class="title" style="font-size:5.6vw">一人一灯</div><div class="sub">集齐朝台印谱的游客，<br>在心馆点亮一盏属于自己的灯</div></div>
+<div class="ov" id="o6"><div class="eyebrow">五台县非物质文化遗产</div><div class="hl"><div class="lv">国家级</div><div>五台山佛乐 · 五台八大套</div><div class="lv">省级</div><div>五台赛戏 · 温氏空心澄泥砚</div><div>五台民间传统彩塑 · 五台山骡马大会</div><div>晋北鼓吹 · 五台山红灯笼制作技艺</div></div></div>
+<div class="ov" id="o7"><div class="eyebrow">扫码</div><div class="title" style="font-size:4.6vw">带着地图去游览</div><div class="qrs"><figure><img src="img/qr_guide.png" alt="导览地图二维码"><figcaption>五台导览地图</figcaption></figure><figure><img src="img/qr_plan.png" alt="建设方案二维码"><figcaption>非遗馆建设方案</figcaption></figure></div></div>
+<div class="bar" id="bar"></div>
+
+<script src="vendor/three.min.js?v=20261027"></script>
+<script src="vendor/OrbitControls.js?v=20261027"></script>
+<script src="data/geo.js?v=20261027"></script>
+<script src="data/plan.js?v=20261027"></script>
+<script src="js/courtyard.js?v=20261027"></script>
+<script src="js/terrain.js?v=20261027"></script>
+<script>
+(function () {
+  var G = window.WT_GEO, P = window.WT_PLAN, q = new URLSearchParams(location.search), record = q.get('record') === '1';
+  var reg = WT.createTerrain(document.getElementById('vRegion'), { area: 'region', plan: 3, proposal: true, manual: true, shot: record, autoRotate: false });
+  var town = WT.createTerrain(document.getElementById('vTown'), { area: 'taihuai', plan: 3, proposal: true, manual: true, shot: record, autoRotate: false });
+  document.getElementById('zones').innerHTML = WT.ZONES.map(function (z) { return '<div><b>' + z.n + '</b>' + z.name.replace(/「|」/g, '') + '</div>'; }).join('');
+
+  var PEAKS = [['东台', '晨', '东台分馆', '听海 · 晨课声场'], ['北台', '雪', '北台分馆', '叶斗经藏 · 非遗种子库'], ['中台', '石', '中台分馆', '翠岩匠作 · 石与刻'], ['西台', '月', '西台分馆', '挂月夜话 · 礼俗剧场'], ['南台', '花', '南台分馆', '锦绣百草 · 康养素食']];
+  var peakPos = PEAKS.map(function (p) { var o = G.osm.peaks.find(function (x) { return x.n.indexOf(p[0]) === 0; }); return [o.p[0], reg.height(o.p[0], o.p[1]), o.p[1], o.ele]; });
+  var C0 = [-1400, 900, -1800];
+  var site = P.sites[0].p, siteY = town.height(site[0], site[1]);
+  function ease(u) { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); }
+  function lerp(a, b, u) { return a.map(function (v, i) { return v + (b[i] - v) * u; }); }
+  function orbit(c, R, h, th) { return [c[0] + Math.sin(th) * R, c[1] + h, c[2] + Math.cos(th) * R]; }
+  function peakCam(i) { var p = peakPos[i]; return { pos: [p[0] + 2600, p[1] + 2300, p[2] + 3600], tgt: [p[0], p[1] + 60, p[2]] }; }
+
+  // 时间轴（秒）
+  var SEG = [
+    { t0: 0, t1: 12, ov: 'o1', area: 'r', night: true, cam: function (u) { return { pos: orbit(C0, 15500, 8800, 0.35 + u * 0.5), tgt: C0 }; } },
+    { t0: 12, t1: 30, ov: 'o2', area: 'r', night: false, cam: function (u, t) {
+      var k = Math.min(4, Math.floor(u * 5)), w = u * 5 - k, a = peakCam(Math.max(0, k - 1)), b = peakCam(k);
+      if (k === 0) a = { pos: orbit(C0, 15500, 8800, 0.85), tgt: C0 };
+      var m = ease(w / 0.45); setPeak(k); return { pos: lerp(a.pos, b.pos, m), tgt: lerp(a.tgt, b.tgt, m) };
+    } },
+    { t0: 30, t1: 42, ov: 'o3', area: 'r', night: false, cam: function (u) { var a = peakCam(4), b = { pos: [6000, 21000, 17500], tgt: [-1800, 0, -1200] }; var m = ease(u / 0.35); return { pos: lerp(lerp(a.pos, b.pos, m), [b.pos[0] - 4000, b.pos[1], b.pos[2]], ease((u - 0.35) / 0.65)), tgt: lerp(a.tgt, b.tgt, m) }; } },
+    { t0: 42, t1: 58, ov: 'o4', area: 't', night: false, cam: function (u) {
+      var A = town.presetData.aerial, S = [[site[0], siteY + 4, site[1] + 4], orbit([site[0], siteY, site[1]], 230, 135, 0.6 + u * 0.5)];
+      var m = ease(u / 0.4); return { pos: lerp(A[1], S[1], m), tgt: lerp(A[0], S[0], m) };
+    } },
+    { t0: 58, t1: 70, ov: 'o5', area: 't', night: true, cam: function (u) { return { pos: orbit([site[0], siteY, site[1]], 210, 120, 1.1 + u * 0.6), tgt: [site[0], siteY + 30, site[1]] }; } },
+    { t0: 70, t1: 80, ov: 'o6', area: 'r', night: false, cam: function (u) { return { pos: orbit(C0, 14000, 7600, 2.2 + u * 0.4), tgt: C0 }; } },
+    { t0: 80, t1: 92, ov: 'o7', area: 'r', night: true, cam: function (u) { return { pos: orbit(C0, 16000, 9400, 2.6 + u * 0.3), tgt: C0 }; } }
+  ];
+  var TOTAL = SEG[SEG.length - 1].t1;
+  document.getElementById('bar').innerHTML = SEG.map(function () { return '<i><b></b></i>'; }).join('');
+  var bars = document.querySelectorAll('#bar b');
+  var lastPeak = -1;
+  function setPeak(k) {
+    if (k === lastPeak) return; lastPeak = k; var p = PEAKS[k];
+    document.getElementById('pkG').textContent = p[1]; document.getElementById('pkN').textContent = p[2];
+    document.getElementById('pkT').textContent = p[3] + ' · 海拔' + peakPos[k][3] + '米';
+  }
+  var nightState = { r: null, t: null }, lastT = 0;
+  function at(t) {
+    t = ((t % TOTAL) + TOTAL) % TOTAL;
+    var seg = SEG.find(function (s) { return t >= s.t0 && t < s.t1; }) || SEG[0], u = (t - seg.t0) / (seg.t1 - seg.t0);
+    var api = seg.area === 'r' ? reg : town;
+    document.getElementById('vRegion').style.visibility = seg.area === 'r' ? 'visible' : 'hidden';
+    document.getElementById('vTown').style.visibility = seg.area === 't' ? 'visible' : 'hidden';
+    if (nightState[seg.area] !== seg.night) { api.setNight(seg.night); nightState[seg.area] = seg.night; }
+    var c = seg.cam(u, t); api.setView(c.pos, c.tgt);
+    var dt = Math.max(0, Math.min(0.1, t - lastT)); lastT = t; api.frame(dt || 1 / 30);
+    SEG.forEach(function (s, i) {
+      var el = document.getElementById(s.ov), d = s.t1 - s.t0, o = s === seg ? Math.min(ease((t - s.t0) / 1.2), ease((s.t1 - t) / 0.8)) : 0;
+      el.style.opacity = o.toFixed(3); el.style.transform = 'translateY(calc(-50% + ' + ((1 - o) * 2).toFixed(2) + 'vw))';
+      bars[i].style.width = (t >= s.t1 ? 100 : t < s.t0 ? 0 : (t - s.t0) / d * 100).toFixed(1) + '%';
+    });
+  }
+  window.SCREEN = { at: at, total: TOTAL };
+  Promise.all([reg.ready, town.ready]).then(function () {
+    if (record) { at(0); document.title = 'READY'; return; }
+    var t0 = performance.now(), off = +(q.get('t') || 0);
+    (function tick() { at((performance.now() - t0) / 1000 + off); requestAnimationFrame(tick); })();
+  });
+  document.addEventListener('dblclick', function () { if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function () {}); });
+})();
+</script>
+</body>
+</html>

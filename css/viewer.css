@@ -1,0 +1,30 @@
+/* 三维视图通用样式（标注浮在三维画面上，颜色不随页面主题变化） */
+.wt-view { position: relative; overflow: hidden; background: #0f1620; touch-action: none; }
+.wt-view canvas { display: block; width: 100% !important; height: 100% !important; cursor: grab; }
+.wt-view canvas:active { cursor: grabbing; }
+.wt-labels { position: absolute; inset: 0; pointer-events: none; font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 12px; }
+.wt-labels[hidden] { display: none; }
+.wt-lbl { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: none; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.75); line-height: 1.3; }
+.wt-lbl[hidden] { display: none !important; }
+button.wt-lbl { pointer-events: auto; cursor: pointer; font: inherit; border: none; }
+.wt-lbl small { font-size: .85em; opacity: .85; }
+.wt-lbl i { font-style: normal; display: inline-grid; place-items: center; width: 1.7em; height: 1.7em; border-radius: 50%; margin-right: .35em; font-weight: 900; font-family: "Noto Serif SC", "Songti SC", serif; }
+.wt-lbl.pk { font-family: "Noto Serif SC", "Songti SC", serif; font-size: 1.15em; font-weight: 600; }
+.wt-lbl.town { font-family: "Noto Serif SC", "Songti SC", serif; font-size: 1.25em; font-weight: 900; letter-spacing: .1em; }
+.wt-lbl.temple { font-size: 1em; color: #ffe9c2; }
+.wt-lbl.village { color: #dfe8ef; opacity: .9; }
+.wt-lbl.prop { background: rgba(18,24,34,.84); border: 1px solid rgba(217,180,90,.7); color: #f3e7c6; padding: 2px 10px 2px 3px; border-radius: 99px; text-shadow: none; display: inline-flex; align-items: center; }
+.wt-lbl.prop i { background: #d9b45a; color: #121822; }
+.wt-lbl.prop.main { background: #d9b45a; color: #121822; border-color: #d9b45a; font-weight: 700; }
+.wt-lbl.prop.main i { background: #121822; color: #d9b45a; }
+.wt-lbl.route { background: rgba(207,90,64,.92); padding: 2px 9px; border-radius: 3px; text-shadow: none; }
+.wt-lbl.craft { color: #ffd98a; font-size: .95em; }
+.wt-lbl.sound { color: #a9d6ff; font-size: .95em; }
+.wt-lbl.site { background: rgba(18,24,34,.84); border: 1px solid #8fb3c9; padding: 2px 9px; border-radius: 3px; text-shadow: none; display: inline-flex; align-items: center; }
+.wt-lbl.site.rec { border-color: #d9b45a; color: #f3e7c6; }
+.wt-lbl.site.rec i { background: #d9b45a; color: #121822; width: 1.5em; height: 1.5em; font-size: .9em; }
+.wt-lbl.small { font-size: .9em; color: #e8eef3; }
+.wt-lbl.zone { background: rgba(247,248,248,.95); color: #1c2629; border: 1px solid #cfd6d7; padding: 2px 8px 2px 3px; border-radius: 99px; text-shadow: none; display: inline-flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.wt-lbl.zone i { background: #2c6a6f; color: #fff; font-family: inherit; font-weight: 700; font-size: .9em; width: 1.6em; height: 1.6em; }
+.wt-lbl.zone.on { background: #efe4cb; border-color: #9a7429; }
+.wt-lbl.zone.on i { background: #9a7429; }
